@@ -15,8 +15,38 @@
 <meta property="og:url" content="https://debt-relief-kr.github.io/">
 <style>
 html,body{margin:0;padding:0;background:#fff}
+body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:#1d2433;padding-bottom:76px}
 main{max-width:860px;margin:0 auto}
 main img{display:block;width:100%;height:auto}
+#book{max-width:860px;margin:0 auto;padding:36px 20px 44px;background:#f4f6f9;box-sizing:border-box}
+#book h2{margin:0 0 8px;font-size:24px;font-weight:800;letter-spacing:-0.5px}
+#book .sub{margin:0 0 24px;font-size:15px;line-height:1.6;color:#4a5263}
+#book .sub b{color:#1d2433}
+.card{background:#fff;border:1px solid #e1e5ec;border-radius:12px;padding:20px 18px;margin-bottom:14px}
+.lbl{display:block;font-size:14px;font-weight:700;margin:0 0 10px}
+.inp{width:100%;box-sizing:border-box;font-size:16px;padding:13px 14px;border:1px solid #cfd5df;border-radius:8px;margin-bottom:12px;background:#fff}
+.inp:focus{outline:none;border-color:#1f3a68}
+.chips{display:grid;gap:8px}
+.days{grid-template-columns:repeat(4,1fr)}
+.times{grid-template-columns:repeat(4,1fr)}
+.chip{font-size:14px;padding:11px 4px;border:1px solid #cfd5df;border-radius:8px;background:#fff;color:#1d2433;cursor:pointer;text-align:center;line-height:1.3}
+.chip small{display:block;font-size:12px;color:#6b7385}
+.chip.on{background:#1f3a68;border-color:#1f3a68;color:#fff}
+.chip.on small{color:#d6deeb}
+.chip:disabled{color:#b8bec9;background:#f1f3f6;cursor:not-allowed}
+.agree{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.55;color:#4a5263;margin:4px 0 16px}
+.agree input{width:20px;height:20px;margin:1px 0 0;flex:none}
+.agree a{color:#1f3a68}
+.go{width:100%;font-size:17px;font-weight:800;padding:16px;border:0;border-radius:10px;background:#1f3a68;color:#fff;cursor:pointer}
+.go:disabled{background:#9aa6ba;cursor:default}
+.msg{font-size:14px;color:#c0392b;margin:10px 0 0;min-height:20px}
+.done{display:none;text-align:center;background:#fff;border:1px solid #e1e5ec;border-radius:12px;padding:30px 18px}
+.done h3{margin:0 0 10px;font-size:20px}
+.done p{margin:0;font-size:15px;line-height:1.6;color:#4a5263}
+.done .when{display:inline-block;margin:6px 0 12px;font-size:18px;font-weight:800;color:#1f3a68}
+#bar{position:fixed;left:0;right:0;bottom:0;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);border-top:1px solid #e1e5ec;z-index:9}
+#bar a{display:block;max-width:832px;margin:0 auto;text-align:center;font-size:17px;font-weight:800;padding:14px;border-radius:10px;background:#1f3a68;color:#fff;text-decoration:none}
+@media (min-width:640px){.days{grid-template-columns:repeat(7,1fr)}.times{grid-template-columns:repeat(6,1fr)}}
 </style>
 </head>
 <body>
@@ -31,5 +61,95 @@ main img{display:block;width:100%;height:auto}
 <img src="08.jpg" alt="" width="860" height="3974" loading="lazy">
 <img src="09.jpg" alt="" width="860" height="504" loading="lazy">
 </main>
+
+<section id="book">
+  <h2>통화 예약하기</h2>
+  <p class="sub">편한 날짜와 시각을 고르시면 그 시간에 담당자가 직접 전화드립니다.<br><b>모르는 번호로 와도 독촉 전화가 아니니 꼭 받아 주세요.</b></p>
+
+  <div id="form">
+    <div class="card">
+      <span class="lbl">1. 날짜</span>
+      <div class="chips days" id="days"></div>
+    </div>
+    <div class="card">
+      <span class="lbl">2. 시각</span>
+      <div class="chips times" id="times"></div>
+    </div>
+    <div class="card">
+      <span class="lbl">3. 연락처</span>
+      <input class="inp" id="nm" type="text" placeholder="이름" autocomplete="name" maxlength="20">
+      <input class="inp" id="ph" type="tel" placeholder="휴대폰 번호 (숫자만)" autocomplete="tel" inputmode="numeric" maxlength="13" style="margin-bottom:4px">
+    </div>
+    <label class="agree"><input type="checkbox" id="ag"><span>[필수] 통화 예약을 위한 개인정보 수집·이용 및 제3자(회사와 제휴한 업체) 제공에 동의합니다. 항목: 이름, 휴대폰 번호, 예약 시각 / 보유: 최대 1년. <a href="https://rerise-kr.github.io/privacy.html" target="_blank" rel="noopener">개인정보처리방침</a></span></label>
+    <button class="go" id="go" type="button">이 시간으로 통화 예약</button>
+    <p class="msg" id="msg"></p>
+  </div>
+
+  <div class="done" id="done">
+    <h3>통화 예약이 완료되었습니다</h3>
+    <div class="when" id="when"></div>
+    <p>예약하신 시간에 담당자가 직접 전화드립니다.<br>모르는 번호로 와도 꼭 받아 주세요.</p>
+  </div>
+</section>
+
+<div id="bar"><a href="#book">편한 시간에 통화 예약하기</a></div>
+
+<script>
+(function(){
+  var API = 'https://kpac-crm-server-production.up.railway.app/api/debt/book';
+  var qs = new URLSearchParams(location.search);
+  var K = (qs.get('k') || '').slice(0, 64);
+  var W = ['일','월','화','수','목','금','토'];
+  var HOURS = [9,10,11,12,13,14,15,16,17,18,19,20];
+  var selDay = null, selHour = null;
+  var daysEl = document.getElementById('days'), timesEl = document.getElementById('times');
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+  function hLabel(h){ return h < 12 ? '오전 ' + h + '시' : h === 12 ? '낮 12시' : h < 19 ? '오후 ' + (h - 12) + '시' : '저녁 ' + (h - 12) + '시'; }
+  function ymd(d){ return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  var now = new Date(), days = [];
+  for (var i = 0; days.length < 7 && i < 14; i++) { var d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i); if (d.getDay() === 0 || d.getDay() === 6) continue; if (i === 0 && now.getHours() >= 19) continue; days.push(d); }
+  function isPast(d, h){ var t = new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, 0); return t.getTime() - Date.now() < 30 * 60000; }
+  function drawTimes(){
+    timesEl.innerHTML = '';
+    HOURS.forEach(function(h){
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = hLabel(h);
+      if (selDay && isPast(selDay, h)) b.disabled = true;
+      if (h === selHour && !b.disabled) b.className += ' on';
+      b.onclick = function(){ selHour = h; drawTimes(); };
+      timesEl.appendChild(b);
+    });
+    if (selDay && selHour !== null && isPast(selDay, selHour)) selHour = null;
+  }
+  days.forEach(function(d, idx){
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'chip';
+    var today = ymd(d) === ymd(now), tmr = ymd(d) === ymd(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1));
+    b.innerHTML = (today ? '오늘' : tmr ? '내일' : (d.getMonth() + 1) + '/' + d.getDate()) + '<small>' + (today || tmr ? (d.getMonth() + 1) + '/' + d.getDate() + ' ' : '') + W[d.getDay()] + '</small>';
+    b.onclick = function(){ selDay = d; [].forEach.call(daysEl.children, function(c){ c.className = 'chip'; }); b.className = 'chip on'; drawTimes(); };
+    daysEl.appendChild(b);
+    if (idx === 0) { selDay = d; b.className = 'chip on'; }
+  });
+  drawTimes();
+  var ph = document.getElementById('ph');
+  ph.addEventListener('input', function(){ var v = ph.value.replace(/\D/g, '').slice(0, 11); ph.value = v.length > 7 ? v.slice(0,3) + '-' + v.slice(3, v.length - 4) + '-' + v.slice(-4) : v.length > 3 ? v.slice(0,3) + '-' + v.slice(3) : v; });
+  var msg = document.getElementById('msg'), go = document.getElementById('go');
+  go.onclick = function(){
+    msg.textContent = '';
+    var nm = document.getElementById('nm').value.trim(), p = ph.value.replace(/\D/g, '');
+    if (!selDay) return msg.textContent = '날짜를 골라 주세요.';
+    if (selHour === null) return msg.textContent = '시각을 골라 주세요.';
+    if (!nm) return msg.textContent = '이름을 입력해 주세요.';
+    if (!/^01[016789]\d{7,8}$/.test(p)) return msg.textContent = '휴대폰 번호를 정확히 입력해 주세요.';
+    if (!document.getElementById('ag').checked) return msg.textContent = '개인정보 동의에 체크해 주세요.';
+    go.disabled = true; go.textContent = '예약 중...';
+    var label = (selDay.getMonth() + 1) + '월 ' + selDay.getDate() + '일(' + W[selDay.getDay()] + ') ' + hLabel(selHour);
+    fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: nm, phone: p, date: ymd(selDay), time: pad(selHour) + ':00', k: K, src: 'case_page' }) })
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok || !j.ok) { var e = new Error('x'); e.user = j.error; throw e; } }); })
+      .then(function(){ document.getElementById('form').style.display = 'none'; document.getElementById('when').textContent = label; document.getElementById('done').style.display = 'block'; document.getElementById('bar').style.display = 'none'; document.getElementById('book').scrollIntoView({ behavior: 'smooth' }); })
+      .catch(function(e){ go.disabled = false; go.textContent = '이 시간으로 통화 예약'; msg.textContent = (e && e.user) || '예약이 잠시 안 되고 있습니다. 잠시 후 다시 눌러 주세요.'; });
+  };
+  var bar = document.getElementById('bar'), book = document.getElementById('book');
+  if ('IntersectionObserver' in window) new IntersectionObserver(function(es){ bar.style.visibility = es[0].isIntersecting ? 'hidden' : 'visible'; }).observe(book);
+})();
+</script>
 </body>
 </html>
